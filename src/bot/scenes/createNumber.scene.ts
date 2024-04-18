@@ -47,7 +47,7 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
 
     ctx.scene.session.virtualNumber = data;
 
-    await ctx.replyWithMarkdownV2(
+   return await ctx.replyWithMarkdownV2(
       readFileSync("./src/bot/locale/default/phone-generated.md").replace(
         "%phone_number%",
         data.CountryCode + data.number
