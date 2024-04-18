@@ -1,14 +1,22 @@
 import { Markup, Scenes, session, type Telegraf } from "telegraf";
 
 import type { BotContext } from "../context";
-import { CREATE_NEW_NUMBER_WIZARD } from "./constants";
+import {
+  CREATE_NEW_NUMBER_WIZARD,
+  CREATE_VIRTUAL_NUMBER_ACTION,
+} from "./constants";
 import { newNumberScene } from "./scenes/createNumber.scene";
 import { findOrCreateUser } from "../controllers/user.controller";
 
 const echoMessage = async (ctx: BotContext) => {
   await ctx.reply(
-    "Welcome to . Select an action to continue!",
-    Markup.keyboard([["create", "otp"]])
+    "Welcome to Virtual Telegram Bot. Get a virtual number to register a telegram account. \n\n Select an action to continue!",
+    Markup.inlineKeyboard([
+      Markup.button.callback(
+        "Create Virtual Number",
+        CREATE_VIRTUAL_NUMBER_ACTION
+      ),
+    ])
   );
 };
 

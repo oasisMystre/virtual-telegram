@@ -22,10 +22,13 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
     ctx.reply("Please enter a valid country code.");
 
   const message = ctx.message!;
-  if (!("text" in message) || message.text.length !== 2)
-    return echoInvalidMessage();
 
-  const country = countries.find(({ code }) => code === message.text);
+  if (!("text" in message)) return echoInvalidMessage();
+
+  const value = message.text.toLowerCase();
+  const country = countries.find(({ code, name }) => {
+    return code.toLowerCase() === value || value.includes(name.toLowerCase());
+  });
 
   if (!country) return echoInvalidMessage();
 
@@ -44,7 +47,7 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
 
     ctx.scene.session.virtualNumber = data;
 
-    return await ctx.replyWithMarkdownV2(
+    await ctx.replyWithMarkdownV2(
       readFileSync("./src/bot/locale/default/phone-generated.md").replace(
         "%phone_number%",
         data.CountryCode + data.number
@@ -55,7 +58,6 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
       ])
     );
   }
-
   await ctx.reply(
     "No number available for " + country.name + ". Try another country."
   );
@@ -114,7 +116,12 @@ function createNewNumberWizard() {
       await ctx.replyWithMarkdownV2(
         cleanText(
           "What country code do you want to generate number for? \n \n E.g. `UK`, `FR`, `US`"
-        )
+        ),
+        Markup.keyboard(
+          countries.map(({ flag, code, name }) =>
+            Markup.button.callback(name + " " + flag, code)
+          )
+        ).oneTime()
       );
 
       return ctx.wizard.next();
