@@ -30,7 +30,6 @@
     "pg-connection-string": "^2.6.4",
     "postgres": "^3.4.4",
     "telegraf": "^4.16.3",
-    "xior": "^0.3.12",
     "zod": "^3.22.4"
   }
 }
