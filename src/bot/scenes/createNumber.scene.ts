@@ -34,26 +34,30 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
     service: Service.TELEGRAM,
   });
 
-  console.log(data);
+  if (data.number) {
+    await createVirtualNumber({
+      price: 0,
+      userId: ctx.from!.id.toString(),
+      id: data.id.toString(),
+      jsonData: JSON.stringify(data),
+    });
 
-  await createVirtualNumber({
-    price: 0,
-    userId: ctx.from!.id.toString(),
-    id: data.id.toString(),
-    jsonData: JSON.stringify(data),
-  });
+    ctx.scene.session.virtualNumber = data;
 
-  ctx.scene.session.virtualNumber = data;
+    return await ctx.replyWithMarkdownV2(
+      readFileSync("./src/bot/locale/default/phone-generated.md").replace(
+        "%phone_number%",
+        data.CountryCode + data.number
+      ),
+      Markup.inlineKeyboard([
+        Markup.button.callback("Reject", REJECT_ACTION),
+        Markup.button.callback("Check OTP", OTP_ACTION),
+      ])
+    );
+  }
 
-  await ctx.replyWithMarkdownV2(
-    readFileSync("./src/bot/locale/default/phone-generated.md").replace(
-      "%phone_number%",
-      data.countryCode + data.number
-    ),
-    Markup.inlineKeyboard([
-      Markup.button.callback("Reject", REJECT_ACTION),
-      Markup.button.callback("Check OTP", OTP_ACTION),
-    ])
+  await ctx.reply(
+    "No number available for " + country.name + ". Try another country."
   );
 };
 

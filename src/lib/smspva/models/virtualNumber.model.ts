@@ -9,7 +9,7 @@ export interface VirtualNumber {
   othersms: string[];
   sms: string | null;
   text: string | null;
-  countryCode: string;
+  CountryCode: string;
   service: Service | null;
   karma: number;
   country: Country["code"];
