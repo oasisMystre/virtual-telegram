@@ -2,9 +2,12 @@
   "name": "visual-telegram",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "module": "dist/src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "serve": "node dist/src/index.js",
+    "dev": "pnpm build && pnpm serve",
+    "start": "bun run src/index.ts"
   },
   "keywords": [],
   "author": "",
