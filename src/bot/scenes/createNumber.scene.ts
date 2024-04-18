@@ -47,7 +47,7 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
 
     ctx.scene.session.virtualNumber = data;
 
-   return await ctx.replyWithMarkdownV2(
+    return await ctx.replyWithMarkdownV2(
       readFileSync("./src/bot/locale/default/phone-generated.md").replace(
         "%phone_number%",
         data.CountryCode + data.number
@@ -114,9 +114,7 @@ function createNewNumberWizard() {
     CREATE_NEW_NUMBER_WIZARD,
     async (ctx) => {
       await ctx.replyWithMarkdownV2(
-        cleanText(
-          "What country code do you want to generate number for? \n \n E.g. `UK`, `FR`, `US`"
-        ),
+        cleanText("Select country of your choice below to generate number."),
         Markup.keyboard(
           countries.map(({ flag, code, name }) =>
             Markup.button.callback(name + " " + flag, code)
