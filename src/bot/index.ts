@@ -62,6 +62,7 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
 
   bot.hears("create", onCreate);
   bot.command("create", onCreate);
+  bot.action("create", onCreate);
 
   return bot;
 };
