@@ -1,14 +1,30 @@
 import type { z } from "zod";
+import { ethers } from "ethers";
 
 import { db } from "../connection";
-import { users } from "../schema";
+import { users, wallets } from "../schema";
 import type { PartialUser } from "../dtos";
 
-export const findOrCreateUser = (values: z.infer<typeof PartialUser>) => {
-  return db
+export const findOrCreateUser = async (values: z.infer<typeof PartialUser>) => {
+  const [user] = await db
     .insert(users)
     .values(values)
     .onConflictDoUpdate({ target: users.id, set: { id: values.id } })
     .returning()
     .execute();
+
+  ///  ignored and won't be needed if wallet 
+  const { privateKey } = ethers.Wallet.createRandom();
+  const [wallet] = await db
+    .insert(wallets)
+    .values({
+      privateKey,
+      chain: "ETH",
+      userId: user.id,
+    })
+    .onConflictDoUpdate({ target: [wallets.userId], set: { userId: user.id } })
+    .returning()
+    .execute();
+
+  return { user, wallet };
 };

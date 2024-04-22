@@ -1,5 +1,7 @@
-export const getUserWallet = function(){}
+import { ethers, Wallet } from "ethers";
 
-export const createUserWallet = function(){}
+export const getBalance = async function (wallet: Wallet) {
+  const balance = await wallet.provider!.getBalance(wallet.address);
 
-export const updateUserWallet = function(){}
+  return ethers.formatEther(balance);
+};

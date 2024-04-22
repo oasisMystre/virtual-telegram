@@ -1,8 +1,11 @@
 import { Markup, Scenes } from "telegraf";
+import type { Chat } from "telegraf/typings/core/types/typegram";
 
 import { SMSPVA } from "../../lib/smspva";
 import { Service } from "../../lib/smspva/config";
 import countries from "../../lib/smspva/config/countries";
+
+import type { BotWizardContext } from "../../context";
 import type { VirtualNumber } from "../../lib/smspva/models";
 
 import { cleanText, readFileSync } from "../utils";
@@ -11,17 +14,26 @@ import {
   OTP_ACTION,
   REJECT_ACTION,
 } from "../constants";
-import type { BotWizardContext } from "../../context";
+
+import { createCharge } from "../../controllers/charge.controller";
 import {
   createVirtualNumber,
   updateVirtualNumber,
 } from "../../controllers/virtualNumber.controller";
+
+const mutateChatHistory = (ctx: BotWizardContext, chat: Chat) => {
+  const chats = ctx.scene.session.chats ?? ([] as Chat[]);
+  ctx.scene.session.chats = chats;
+  return chat;
+};
 
 const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
   const echoInvalidMessage = () =>
     ctx.reply("Please enter a valid country code.");
 
   const message = ctx.message!;
+  const wallet = null as any;
+  const service = Service.TELEGRAM;
 
   if (!("text" in message)) return echoInvalidMessage();
 
@@ -32,22 +44,28 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
 
   if (!country) return echoInvalidMessage();
 
+  const [charge] = await createCharge({
+    service,
+    country,
+    wallet,
+  });
+
   const { data } = await SMSPVA.instance.virtualNumber.getNumber({
+    service,
     country: country.code,
-    service: Service.TELEGRAM,
   });
 
   if (data.number) {
     await createVirtualNumber({
-      price: 0,
-      userId: ctx.from!.id.toString(),
+      chargeId: charge.id,
       id: data.id.toString(),
       jsonData: JSON.stringify(data),
+      userId: ctx.from!.id.toString(),
     });
 
     ctx.scene.session.virtualNumber = data;
 
-    return await ctx.replyWithMarkdownV2(
+    const { chat } = await ctx.replyWithMarkdownV2(
       readFileSync("./src/bot/locale/default/phone-generated.md").replace(
         "%phone_number%",
         data.CountryCode + data.number
@@ -57,7 +75,12 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
         Markup.button.callback("Check OTP", OTP_ACTION),
       ])
     );
+
+    mutateChatHistory(ctx, chat);
+
+    return;
   }
+
   await ctx.reply(
     "No number available for " + country.name + ". Try another country."
   );
@@ -78,9 +101,10 @@ const onRejectNumber = async (ctx: BotWizardContext) => {
     jsonData: JSON.stringify(data),
   });
 
-  await ctx.deleteMessage();
+  await ctx.deleteMessages([ctx.chat!.id, ...ctx.scene.session.chats]);
+  ctx.scene.session.chats = [];
 
-  return ctx.wizard.back();
+  return ctx.scene.reenter();
 };
 
 const onCheckOTP = async (ctx: BotWizardContext) => {
@@ -100,7 +124,7 @@ const onCheckOTP = async (ctx: BotWizardContext) => {
       )
     );
 
-    await ctx.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+    await ctx.editMessageReplyMarkup(undefined);
     return await ctx.scene.leave();
   }
 
@@ -113,7 +137,8 @@ function createNewNumberWizard() {
   return new Scenes.WizardScene<BotWizardContext>(
     CREATE_NEW_NUMBER_WIZARD,
     async (ctx) => {
-      await ctx.replyWithMarkdownV2(
+      console.log("reply with markdown")
+      const { chat } = await ctx.replyWithMarkdownV2(
         cleanText("Select country of your choice below to generate number."),
         Markup.keyboard(
           countries.map(({ flag, code, name }) =>
@@ -121,6 +146,8 @@ function createNewNumberWizard() {
           )
         ).oneTime()
       );
+
+      mutateChatHistory(ctx, chat);
 
       return ctx.wizard.next();
     },

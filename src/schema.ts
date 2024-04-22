@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   integer,
   json,
@@ -22,19 +23,25 @@ export const wallets = pgTable("wallets", {
   privateKey: text("private_key").unique().notNull(),
   userId: text("user_id")
     .references(() => users.id, { onDelete: "cascade" })
+    .unique()
     .notNull(),
+});
+
+export const charges = pgTable("charges", {
+  id: serial("id").primaryKey(),
+  price: bigint("price", { mode: "number" }).notNull(),
+  isCharged: boolean("is_charged").default(false).notNull(),
 });
 
 export const virtualNumbers = pgTable("virtual_numbers", {
   id: text("id").primaryKey(),
-  price: integer("price").notNull(),
   jsonData: json("json_data").notNull(),
-  isCharged: boolean("is_charged").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
   userId: text("user_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  chargeId: serial("id").references(() => charges.id, { onDelete: "set null" }),
 });
 
 export const supportTickers = pgTable("support_ticker", {
@@ -56,6 +63,14 @@ export const virtualNumberRelations = relations(virtualNumbers, ({ one }) => ({
     references: [users.id],
     fields: [virtualNumbers.userId],
   }),
+  charge: one(charges, {
+    references: [charges.id],
+    fields: [virtualNumbers.chargeId],
+  }),
+}));
+
+export const chargeRelations = relations(charges, ({ many }) => ({
+  virtualNumber: many(virtualNumbers),
 }));
 
 export const walletRelations = relations(wallets, ({ one }) => ({
@@ -75,9 +90,11 @@ export const supportTickerRelations = relations(supportTickers, ({ one }) => ({
 export default {
   users,
   wallets,
+  charges,
   virtualNumbers,
   supportTickers,
   userRelations,
   walletRelations,
+  chargeRelations,
   virtualNumberRelations,
 };
