@@ -22,6 +22,12 @@ const echoMessage = async (ctx: BotContext) => {
   );
 };
 
+const echoHelp = async (ctx: BotContext) => {
+  await ctx.replyWithMarkdownV2(
+    readFileSync("./src/bot/locale/default/help.md")
+  );
+};
+
 const onCreate = async (ctx: BotContext) => {
   await ctx.scene.enter(CREATE_NEW_NUMBER_WIZARD);
 };
@@ -80,6 +86,9 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
   bot.hears("create", onCreate);
   bot.command("create", onCreate);
   bot.action("create", onCreate);
+  bot.command("help", echoHelp);
+  bot.hears("help", echoHelp);
+  bot.action("help", echoHelp);
 
   /// useWallet(bot);
 
