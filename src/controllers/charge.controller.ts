@@ -6,7 +6,6 @@ import { charges } from "../schema";
 import { SMSPVA } from "../lib/smspva";
 import { Country, Service } from "../lib/smspva/config";
 
-
 type CreateChargeParams = {
   service: Service;
   country: Country;
@@ -25,7 +24,7 @@ export const createCharge = async function ({
   return db
     .insert(charges)
     .values({
-      price: Number(price.price),
+      price: Math.floor(Number(price.price)),
     })
     .returning()
     .execute();

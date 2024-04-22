@@ -1,9 +1,38 @@
 {
-  "id": "62851d5e-97d2-41db-be94-95d56ef5a293",
+  "id": "d97c8be2-7225-4208-a8a9-e6eca0813429",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
   "tables": {
+    "charges": {
+      "name": "charges",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "price": {
+          "name": "price",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_charged": {
+          "name": "is_charged",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "support_ticker": {
       "name": "support_ticker",
       "schema": "",
@@ -105,28 +134,9 @@
           "primaryKey": true,
           "notNull": true
         },
-        "price": {
-          "name": "price",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
         "json_data": {
           "name": "json_data",
           "type": "json",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_charged": {
-          "name": "is_charged",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -143,6 +153,18 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "charge_id": {
+          "name": "charge_id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -158,6 +180,19 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "virtual_numbers_charge_id_charges_id_fk": {
+          "name": "virtual_numbers_charge_id_charges_id_fk",
+          "tableFrom": "virtual_numbers",
+          "tableTo": "charges",
+          "columnsFrom": [
+            "charge_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -216,6 +251,13 @@
           "nullsNotDistinct": false,
           "columns": [
             "private_key"
+          ]
+        },
+        "wallets_user_id_unique": {
+          "name": "wallets_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id"
           ]
         }
       }

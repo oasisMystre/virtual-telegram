@@ -21,8 +21,9 @@ import {
   updateVirtualNumber,
 } from "../../controllers/virtualNumber.controller";
 
-const mutateChatHistory = (ctx: BotWizardContext, chat: Chat) => {
-  const chats = ctx.scene.session.chats ?? ([] as Chat[]);
+const mutateChatHistory = (ctx: BotWizardContext, chat: number) => {
+  const chats = (ctx.scene.session.chats ?? []) as number[];
+  chats.push(chat);
   ctx.scene.session.chats = chats;
   return chat;
 };
@@ -65,7 +66,7 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
 
     ctx.scene.session.virtualNumber = data;
 
-    const { chat } = await ctx.replyWithMarkdownV2(
+    const { message_id } = await ctx.replyWithMarkdownV2(
       readFileSync("./src/bot/locale/default/phone-generated.md").replace(
         "%phone_number%",
         data.CountryCode + data.number
@@ -76,7 +77,7 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
       ])
     );
 
-    mutateChatHistory(ctx, chat);
+    mutateChatHistory(ctx, message_id);
 
     return;
   }
@@ -101,7 +102,9 @@ const onRejectNumber = async (ctx: BotWizardContext) => {
     jsonData: JSON.stringify(data),
   });
 
-  await ctx.deleteMessages([ctx.chat!.id, ...ctx.scene.session.chats]);
+  const chats = ctx.scene.session.chats;
+
+  await ctx.deleteMessages([...chats]);
   ctx.scene.session.chats = [];
 
   return ctx.scene.reenter();
@@ -137,8 +140,7 @@ function createNewNumberWizard() {
   return new Scenes.WizardScene<BotWizardContext>(
     CREATE_NEW_NUMBER_WIZARD,
     async (ctx) => {
-      console.log("reply with markdown")
-      const { chat } = await ctx.replyWithMarkdownV2(
+      const { message_id } = await ctx.replyWithMarkdownV2(
         cleanText("Select country of your choice below to generate number."),
         Markup.keyboard(
           countries.map(({ flag, code, name }) =>
@@ -147,7 +149,7 @@ function createNewNumberWizard() {
         ).oneTime()
       );
 
-      mutateChatHistory(ctx, chat);
+      mutateChatHistory(ctx, message_id);
 
       return ctx.wizard.next();
     },

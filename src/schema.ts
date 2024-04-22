@@ -41,7 +41,7 @@ export const virtualNumbers = pgTable("virtual_numbers", {
   userId: text("user_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
-  chargeId: serial("id").references(() => charges.id, { onDelete: "set null" }),
+  chargeId: serial("charge_id").references(() => charges.id, { onDelete: "set null" }),
 });
 
 export const supportTickers = pgTable("support_ticker", {

@@ -5,24 +5,24 @@ import type { BotContext } from "../context";
 import {
   CREATE_NEW_NUMBER_WIZARD,
   CREATE_VIRTUAL_NUMBER_ACTION,
-  WALLET_COMMAND,
+  //WALLET_COMMAND,
 } from "./constants";
-import useWallet from "./wallet";
+//import useWallet from "./wallet";
 import { newNumberScene } from "./scenes/createNumber.scene";
 import { findOrCreateUser } from "../controllers/user.controller";
+import { readFileSync } from "./utils";
 
 const echoMessage = async (ctx: BotContext) => {
-  await ctx.reply(
-    "Welcome to Virtual Telegram Bot. Get a virtual number to register a telegram account. \n\n Select an action to continue!",
+  await ctx.replyWithMarkdownV2(
+    readFileSync("./src/bot/locale/default/start.md"),
     Markup.inlineKeyboard([
-      Markup.button.callback("Wallet", WALLET_COMMAND),
+      //Markup.button.callback("Wallet", WALLET_COMMAND),
       Markup.button.callback("Create Number", CREATE_VIRTUAL_NUMBER_ACTION),
     ])
   );
 };
 
 const onCreate = async (ctx: BotContext) => {
-  console.log("create....")
   await ctx.scene.enter(CREATE_NEW_NUMBER_WIZARD);
 };
 
@@ -79,7 +79,9 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
 
   bot.hears("create", onCreate);
   bot.command("create", onCreate);
-  useWallet(bot);
+  bot.action("create", onCreate);
+
+  /// useWallet(bot);
 
   return bot;
 };
