@@ -29,7 +29,14 @@ const echoHelp = async (ctx: BotContext) => {
 };
 
 const onCreate = async (ctx: BotContext) => {
-  await ctx.scene.enter(CREATE_NEW_NUMBER_WIZARD);
+  if (ctx.user.isVerified)
+    return await ctx.scene.enter(CREATE_NEW_NUMBER_WIZARD);
+  await ctx.replyWithMarkdownV2(
+    readFileSync("./src/bot/locale/default/help.md"),
+    Markup.inlineKeyboard([
+      Markup.button.webApp("Join group", "https://t.me/altgenerate"),
+    ])
+  );
 };
 
 export const registerBot = function (bot: Telegraf<BotContext>) {
@@ -64,10 +71,6 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
       description: "Start or upgrade the bot to the latest version",
     },
     {
-      command: "wallet",
-      description: "Check wallet balance and topup",
-    },
-    {
       command: "create",
       description: "Create a new virtual number",
     },
@@ -90,7 +93,19 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
   bot.hears("help", echoHelp);
   bot.action("help", echoHelp);
 
-  /// useWallet(bot);
+  bot.on("new_chat_members", async (ctx) => {
+    await Promise.all(
+      ctx.message.new_chat_members.map((member) =>
+        findOrCreateUser({
+          isVerified: true,
+          id: member.id.toString(),
+          firstName: member.first_name,
+          lastName: member.last_name,
+          username: member.username!,
+        })
+      )
+    );
+  });
 
   return bot;
 };

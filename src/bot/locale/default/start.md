@@ -1,7 +1,10 @@
-Welcome To Alt Bot. 
-Get a Virtual Number to Create Alternative Telegram Accounts 
+*Welcome To Alt Bot.*
 
-How to use @altgeneratorBot
+Get a Virtual Number to Create Alternative Telegram Accounts.
+
+⛔️ Ensure you are a member of https://t.me/altgenerate
+
+*How to get started*
 
 1. Click on Create Button (or click on MENU and Select Create) 
 
