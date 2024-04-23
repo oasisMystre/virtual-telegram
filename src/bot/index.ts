@@ -29,6 +29,8 @@ const echoHelp = async (ctx: BotContext) => {
 };
 
 const onCreate = async (ctx: BotContext) => {
+  if (ctx.chat?.type !== "private") return;
+
   if (ctx.user.isVerified)
     return await ctx.scene.enter(CREATE_NEW_NUMBER_WIZARD);
   await ctx.replyWithMarkdownV2(
@@ -65,33 +67,34 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
     await next();
   });
 
-  bot.telegram.setMyCommands([
-    {
-      command: "start",
-      description: "Start or upgrade the bot to the latest version",
-    },
-    {
-      command: "create",
-      description: "Create a new virtual number",
-    },
-    {
-      command: "help",
-      description: "Show help",
-    },
-    {
-      command: "socials",
-      description: "Show our social media handles and website",
-    },
-  ]);
+  bot.telegram.setMyCommands(
+    [
+      {
+        command: "start",
+        description: "Start or upgrade the bot to the latest version",
+      },
+      {
+        command: "create",
+        description: "Create a new virtual number",
+      },
+      {
+        command: "help",
+        description: "Show help",
+      },
+      {
+        command: "socials",
+        description: "Show our social media handles and website",
+      },
+    ],
+    { scope: { type: "all_private_chats" } }
+  );
 
   bot.start(echoMessage);
+  bot.help(echoHelp);
 
   bot.hears("create", onCreate);
   bot.command("create", onCreate);
   bot.action("create", onCreate);
-  bot.command("help", echoHelp);
-  bot.hears("help", echoHelp);
-  bot.action("help", echoHelp);
 
   bot.on("new_chat_members", async (ctx) => {
     await Promise.all(
