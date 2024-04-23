@@ -34,7 +34,7 @@ const onCreate = async (ctx: BotContext) => {
   if (ctx.user.isVerified)
     return await ctx.scene.enter(CREATE_NEW_NUMBER_WIZARD);
   await ctx.replyWithMarkdownV2(
-    readFileSync("./src/bot/locale/default/help.md"),
+    readFileSync("./src/bot/locale/default/join-group.md"),
     Markup.inlineKeyboard([
       Markup.button.webApp("Join group", "https://t.me/altgenerate"),
     ])
