@@ -1,3 +1,4 @@
+import { password } from "bun";
 import { relations } from "drizzle-orm";
 import {
   bigint,
@@ -47,6 +48,15 @@ export const virtualNumbers = pgTable("virtual_numbers", {
   }),
 });
 
+export const tempMails = pgTable("temp_mail", {
+  id: serial("id").primaryKey(),
+  username: text("email").notNull(),
+  password: text("password").notNull(),
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
+});
+
 export const supportTickers = pgTable("support_ticker", {
   id: serial("id").primaryKey(),
   ticker: text("ticker").notNull(),
@@ -59,6 +69,7 @@ export const supportTickers = pgTable("support_ticker", {
 export const userRelations = relations(users, ({ many }) => ({
   wallet: many(wallets),
   tickers: many(supportTickers),
+  tempMails: many(tempMails),
 }));
 
 export const virtualNumberRelations = relations(virtualNumbers, ({ one }) => ({
@@ -69,6 +80,13 @@ export const virtualNumberRelations = relations(virtualNumbers, ({ one }) => ({
   charge: one(charges, {
     references: [charges.id],
     fields: [virtualNumbers.chargeId],
+  }),
+}));
+
+export const tempMailRelations = relations(tempMails, ({ one }) => ({
+  user: one(users, {
+    references: [users.id],
+    fields: [tempMails.userId],
   }),
 }));
 
@@ -95,9 +113,11 @@ export default {
   wallets,
   charges,
   virtualNumbers,
+  tempMails,
   supportTickers,
   userRelations,
   walletRelations,
   chargeRelations,
   virtualNumberRelations,
+  tempMailRelations,
 };

@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS "user" (
 	"last_name" text,
 	"first_name" text NOT NULL,
 	"username" text NOT NULL,
+	"is_verified" boolean DEFAULT false,
 	CONSTRAINT "user_username_unique" UNIQUE("username")
 );
 --> statement-breakpoint

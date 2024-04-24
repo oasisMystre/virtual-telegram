@@ -1,4 +1,4 @@
-import { Markup, Scenes } from "telegraf";
+import { Composer, Markup, Scenes } from "telegraf";
 import type { Chat } from "telegraf/typings/core/types/typegram";
 
 import { SMSPVA } from "../../lib/smspva";
@@ -79,64 +79,69 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
 
     mutateChatHistory(ctx, message_id);
 
-    return;
+    return ctx.wizard.next();
   }
 
   await ctx.reply(
-    "No number available for " + country.name + ". Try another country."
-  );
-};
-
-const onRejectNumber = async (ctx: BotWizardContext) => {
-  /// insert delete code here
-  const virtualNumber = ctx.scene.session.virtualNumber as VirtualNumber;
-  const id = virtualNumber.id.toString();
-
-  const { data } = await SMSPVA.instance.virtualNumber.denyNumber({
-    id: virtualNumber.id.toPrecision(),
-    service: Service.TELEGRAM,
-    country: virtualNumber.country,
-  });
-
-  await updateVirtualNumber(id, {
-    jsonData: JSON.stringify(data),
-  });
-
-  const chats = ctx.scene.session.chats;
-
-  await ctx.deleteMessages([...chats]);
-  ctx.scene.session.chats = [];
-
-  return ctx.scene.reenter();
-};
-
-const onCheckOTP = async (ctx: BotWizardContext) => {
-  /// insert otp check code here
-  const virtualNumber = ctx.scene.session.virtualNumber as VirtualNumber;
-  const { data } = await SMSPVA.instance.virtualNumber.getSMS({
-    id: virtualNumber.id.toString(),
-    service: Service.TELEGRAM,
-    country: virtualNumber.country,
-  });
-
-  if (data.sms) {
-    await ctx.replyWithMarkdownV2(
-      readFileSync("./src/bot/locale/default/otp-recieved.md").replace(
-        "%sms%",
-        data.sms ?? data.text
+    "No number available for " + country.name + ". Try another country.",
+    Markup.keyboard(
+      countries.map(({ flag, code, name }) =>
+        Markup.button.callback(name + " " + flag, code)
       )
-    );
-
-    await ctx.editMessageReplyMarkup(undefined);
-    return await ctx.scene.leave();
-  }
-
-  return await ctx.reply(
-    "No SMS found! Wait some moment or check if you used the correct number."
+    ).oneTime()
   );
 };
 
 function createNewNumberWizard() {
+  const stepHandler = new Composer<BotWizardContext>();
+
+  stepHandler.action(OTP_ACTION, async (ctx: BotWizardContext) => {
+    const virtualNumber = ctx.scene.session.virtualNumber as VirtualNumber;
+    const { data } = await SMSPVA.instance.virtualNumber.getSMS({
+      id: virtualNumber.id.toString(),
+      service: Service.TELEGRAM,
+      country: virtualNumber.country,
+    });
+
+    if (data.sms) {
+      await ctx.replyWithMarkdownV2(
+        readFileSync("./src/bot/locale/default/otp-recieved.md").replace(
+          "%sms%",
+          data.sms ?? data.text
+        )
+      );
+
+      await ctx.editMessageReplyMarkup(undefined);
+      return await ctx.scene.leave();
+    }
+
+    return await ctx.reply(
+      "No SMS found! Wait some moment or check if you used the correct number."
+    );
+  });
+
+  stepHandler.action(REJECT_ACTION, async (ctx: BotWizardContext) => {
+    const virtualNumber = ctx.scene.session.virtualNumber as VirtualNumber;
+    const id = virtualNumber.id.toString();
+
+    const { data } = await SMSPVA.instance.virtualNumber.denyNumber({
+      id: virtualNumber.id.toPrecision(),
+      service: Service.TELEGRAM,
+      country: virtualNumber.country,
+    });
+
+    await updateVirtualNumber(id, {
+      jsonData: JSON.stringify(data),
+    });
+
+    const chats = ctx.scene.session.chats;
+
+    await ctx.deleteMessages([...chats]);
+    ctx.scene.session.chats = [];
+
+    return ctx.scene.reenter();
+  });
+
   return new Scenes.WizardScene<BotWizardContext>(
     CREATE_NEW_NUMBER_WIZARD,
     async (ctx) => {
@@ -153,16 +158,8 @@ function createNewNumberWizard() {
 
       return ctx.wizard.next();
     },
-    async (ctx) => {
-      const callbackQuery = ctx.callbackQuery;
-      if (callbackQuery && "data" in callbackQuery) {
-        if (callbackQuery.data === OTP_ACTION) return onCheckOTP(ctx);
-        else if (callbackQuery.data === REJECT_ACTION)
-          return onRejectNumber(ctx);
-      }
-
-      await onCreateVirtualNumber(ctx);
-    }
+    onCreateVirtualNumber,
+    stepHandler
   );
 }
 

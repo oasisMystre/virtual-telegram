@@ -1,22 +1,22 @@
-import { ethers } from "ethers";
 import { Markup, Scenes, session, type Telegraf } from "telegraf";
 
 import type { BotContext } from "../context";
+import { findOrCreateUser } from "../controllers/user.controller";
+
+import { readFileSync } from "./utils";
+import { initializeState } from "./initialize";
+import { newNumberScene } from "./scenes/createNumber.scene";
+import { createEmailScene } from "./scenes/createEmail.scene";
 import {
+  CREATE_EMAIL_WIZARD,
   CREATE_NEW_NUMBER_WIZARD,
   CREATE_VIRTUAL_NUMBER_ACTION,
-  //WALLET_COMMAND,
 } from "./constants";
-//import useWallet from "./wallet";
-import { newNumberScene } from "./scenes/createNumber.scene";
-import { findOrCreateUser } from "../controllers/user.controller";
-import { readFileSync } from "./utils";
 
 const echoMessage = async (ctx: BotContext) => {
   await ctx.replyWithMarkdownV2(
     readFileSync("./src/bot/locale/default/start.md"),
     Markup.inlineKeyboard([
-      //Markup.button.callback("Wallet", WALLET_COMMAND),
       Markup.button.callback("Create Number", CREATE_VIRTUAL_NUMBER_ACTION),
     ])
   );
@@ -28,11 +28,7 @@ const echoHelp = async (ctx: BotContext) => {
   );
 };
 
-const onCreate = async (ctx: BotContext) => {
-  if (ctx.chat?.type !== "private") return;
-
-  if (ctx.user.isVerified)
-    return await ctx.scene.enter(CREATE_NEW_NUMBER_WIZARD);
+export const echoVerify = async (ctx: BotContext) => {
   await ctx.replyWithMarkdownV2(
     readFileSync("./src/bot/locale/default/join-group.md"),
     Markup.inlineKeyboard([
@@ -41,31 +37,30 @@ const onCreate = async (ctx: BotContext) => {
   );
 };
 
+const onCreate = async (ctx: BotContext) => {
+  if (ctx.chat?.type !== "private") return;
+
+  if (ctx.user.isVerified)
+    return await ctx.scene.enter(CREATE_NEW_NUMBER_WIZARD);
+  await echoVerify(ctx);
+};
+
+const onEmail = async (ctx: BotContext) => {
+  if (ctx.chat?.type !== "private") return;
+  if (ctx.user.isVerified) return await ctx.scene.enter(CREATE_EMAIL_WIZARD);
+  await echoVerify(ctx);
+};
+
 export const registerBot = function (bot: Telegraf<BotContext>) {
-  const stage = new Scenes.Stage([newNumberScene]);
+  const scenes = [newNumberScene, createEmailScene];
+  const stage = new Scenes.Stage(scenes);
+
+  scenes.map((scene) => scene.use(initializeState));
 
   bot.use(session());
   bot.use(stage.middleware());
 
-  bot.use(async (ctx, next) => {
-    const from = ctx.from!;
-    const { user, wallet } = await findOrCreateUser({
-      id: from.id.toString(),
-      firstName: from.first_name,
-      lastName: from.last_name,
-      username: from.username!,
-    });
-
-    ctx.user = user;
-    ctx.wallet = new ethers.Wallet(
-      wallet.privateKey,
-      new ethers.JsonRpcProvider(
-        "https://mainnet.infura.io/v3/8184cb052a034f8bae2fbadfd6675dcc"
-      )
-    );
-
-    await next();
-  });
+  bot.use(initializeState);
 
   bot.telegram.setMyCommands(
     [
@@ -74,8 +69,12 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
         description: "Start or upgrade the bot to the latest version",
       },
       {
-        command: "create",
+        command: "phone",
         description: "Create a new virtual number",
+      },
+      {
+        command: "email",
+        description: "Show or Change assign temp mail",
       },
       {
         command: "help",
@@ -92,9 +91,13 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
   bot.start(echoMessage);
   bot.help(echoHelp);
 
-  bot.hears("create", onCreate);
-  bot.command("create", onCreate);
-  bot.action("create", onCreate);
+  bot.hears("phone", onCreate);
+  bot.command("phone", onCreate);
+  bot.action("phone", onCreate);
+
+  bot.hears("email", onEmail);
+  bot.command("email", onEmail);
+  bot.action("email", onEmail);
 
   bot.on("new_chat_members", async (ctx) => {
     await Promise.all(
