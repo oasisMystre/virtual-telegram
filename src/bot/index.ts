@@ -75,15 +75,15 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
       },
       {
         command: "email",
-        description: "Show or Change assign temp mail",
+        description: "Generate and change assign temp mail",
       },
       {
         command: "help",
-        description: "Show help",
+        description: "Show altsgenerateBot help",
       },
       {
         command: "socials",
-        description: "Show our social media handles and website",
+        description: "Show our socials and website",
       },
     ],
     { scope: { type: "all_private_chats" } }
