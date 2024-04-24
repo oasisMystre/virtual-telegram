@@ -1,5 +1,6 @@
 import { Markup, Scenes, session, type Telegraf } from "telegraf";
 
+import { onChange, onDelete, onInbox, onOpen, onOTP, onReject } from "./shared";
 import type { BotContext } from "../context";
 import { findOrCreateUser } from "../controllers/user.controller";
 
@@ -98,6 +99,22 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
   bot.hears("email", onEmail);
   bot.command("email", onEmail);
   bot.action("email", onEmail);
+
+  /// Virtual number actions
+  bot.action(/^otp/i, onOTP);
+  bot.action(/^reject/i, onReject);
+
+  /// Temp mail actions
+  bot.action(/^inbox/i, onInbox);
+  bot.action(/^change/i, onChange);
+
+  bot.action(/^open/i, onOpen);
+  bot.action(/^delete/, onDelete);
+
+  bot.on("callback_query", (ctx) => {
+    /// do restore here
+    console.log(ctx.scene.current);
+  });
 
   bot.on("new_chat_members", async (ctx) => {
     await Promise.all(

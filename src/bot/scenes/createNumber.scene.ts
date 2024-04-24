@@ -1,13 +1,12 @@
 import { Composer, Markup, Scenes } from "telegraf";
-import type { Chat } from "telegraf/typings/core/types/typegram";
 
 import { SMSPVA } from "../../lib/smspva";
 import { Service } from "../../lib/smspva/config";
 import countries from "../../lib/smspva/config/countries";
 
 import type { BotWizardContext } from "../../context";
-import type { VirtualNumber } from "../../lib/smspva/models";
 
+import { onOTP, onReject } from "../shared";
 import { cleanText, readFileSync } from "../utils";
 import {
   CREATE_NEW_NUMBER_WIZARD,
@@ -16,10 +15,7 @@ import {
 } from "../constants";
 
 import { createCharge } from "../../controllers/charge.controller";
-import {
-  createVirtualNumber,
-  updateVirtualNumber,
-} from "../../controllers/virtualNumber.controller";
+import { createVirtualNumber } from "../../controllers/virtualNumber.controller";
 
 const mutateChatHistory = (ctx: BotWizardContext, chat: number) => {
   const chats = (ctx.scene.session.chats ?? []) as number[];
@@ -64,16 +60,20 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
       userId: ctx.from!.id.toString(),
     });
 
-    ctx.scene.session.virtualNumber = data;
-
     const { message_id } = await ctx.replyWithMarkdownV2(
       readFileSync("./src/bot/locale/default/phone-generated.md").replace(
         "%phone_number%",
         data.CountryCode + data.number
       ),
       Markup.inlineKeyboard([
-        Markup.button.callback("Reject", REJECT_ACTION),
-        Markup.button.callback("Check OTP", OTP_ACTION),
+        Markup.button.callback(
+          "Reject",
+          REJECT_ACTION + data.id + country.code
+        ),
+        Markup.button.callback(
+          "Check OTP",
+          OTP_ACTION + data.id + country.code
+        ),
       ])
     );
 
@@ -95,52 +95,9 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
 function createNewNumberWizard() {
   const stepHandler = new Composer<BotWizardContext>();
 
-  stepHandler.action(OTP_ACTION, async (ctx: BotWizardContext) => {
-    const virtualNumber = ctx.scene.session.virtualNumber as VirtualNumber;
-    const { data } = await SMSPVA.instance.virtualNumber.getSMS({
-      id: virtualNumber.id.toString(),
-      service: Service.TELEGRAM,
-      country: virtualNumber.country,
-    });
+  stepHandler.action(/^otp/i, onOTP);
 
-    if (data.sms) {
-      await ctx.replyWithMarkdownV2(
-        readFileSync("./src/bot/locale/default/otp-recieved.md").replace(
-          "%sms%",
-          data.sms ?? data.text
-        )
-      );
-
-      await ctx.editMessageReplyMarkup(undefined);
-      return await ctx.scene.leave();
-    }
-
-    return await ctx.reply(
-      "No SMS found! Wait some moment or check if you used the correct number."
-    );
-  });
-
-  stepHandler.action(REJECT_ACTION, async (ctx: BotWizardContext) => {
-    const virtualNumber = ctx.scene.session.virtualNumber as VirtualNumber;
-    const id = virtualNumber.id.toString();
-
-    const { data } = await SMSPVA.instance.virtualNumber.denyNumber({
-      id: virtualNumber.id.toPrecision(),
-      service: Service.TELEGRAM,
-      country: virtualNumber.country,
-    });
-
-    await updateVirtualNumber(id, {
-      jsonData: JSON.stringify(data),
-    });
-
-    const chats = ctx.scene.session.chats;
-
-    await ctx.deleteMessages([...chats]);
-    ctx.scene.session.chats = [];
-
-    return ctx.scene.reenter();
-  });
+  stepHandler.action(/^reject/i, onReject);
 
   return new Scenes.WizardScene<BotWizardContext>(
     CREATE_NEW_NUMBER_WIZARD,
