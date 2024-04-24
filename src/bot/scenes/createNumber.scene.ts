@@ -9,7 +9,10 @@ import type { BotWizardContext } from "../../context";
 import { onOTP, onReject } from "../shared";
 import { cleanText, readFileSync } from "../utils";
 import {
+  CANCEL_ACTION,
+  CREATE_EMAIL_WIZARD,
   CREATE_NEW_NUMBER_WIZARD,
+  GENERATE_EMAIL_ACTION,
   OTP_ACTION,
   REJECT_ACTION,
 } from "../constants";
@@ -35,6 +38,13 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
   if (!("text" in message)) return echoInvalidMessage();
 
   const value = message.text.toLowerCase();
+
+  if (value === "cancel") {
+    if (ctx.scene && ctx.scene.session)
+      await ctx.deleteMessages(ctx.scene.session.chats);
+    return await ctx.deleteMessage();
+  }
+
   const country = countries.find(({ code, name }) => {
     return code.toLowerCase() === value || value.includes(name.toLowerCase());
   });
@@ -65,16 +75,23 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
         "%phone_number%",
         data.CountryCode + data.number
       ),
-      Markup.inlineKeyboard([
-        Markup.button.callback(
-          "Reject",
-          REJECT_ACTION + data.id + country.code
-        ),
-        Markup.button.callback(
-          "Check OTP",
-          OTP_ACTION + data.id + country.code
-        ),
-      ])
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "Reject",
+                callback_data: REJECT_ACTION + data.id + country.code,
+              },
+              {
+                text: "Check OTP",
+                callback_data: OTP_ACTION + data.id + country.code,
+              },
+            ],
+            [{ text: "Generate Email", callback_data: GENERATE_EMAIL_ACTION }],
+          ],
+        },
+      }
     );
 
     mutateChatHistory(ctx, message_id);
@@ -96,19 +113,33 @@ function createNewNumberWizard() {
   const stepHandler = new Composer<BotWizardContext>();
 
   stepHandler.action(/^otp/i, onOTP);
-
   stepHandler.action(/^reject/i, onReject);
+  stepHandler.action(
+    GENERATE_EMAIL_ACTION,
+    async (ctx) => await ctx.scene.enter(CREATE_EMAIL_WIZARD)
+  );
+  stepHandler.action(CANCEL_ACTION, async (ctx) => await ctx.deleteMessage());
 
   return new Scenes.WizardScene<BotWizardContext>(
     CREATE_NEW_NUMBER_WIZARD,
     async (ctx) => {
+      Markup.keyboard(
+        countries.map(({ flag, code, name }) =>
+          Markup.button.callback(name + " " + flag, code)
+        )
+      ).oneTime();
+
       const { message_id } = await ctx.replyWithMarkdownV2(
         cleanText("Select country of your choice below to generate number."),
-        Markup.keyboard(
-          countries.map(({ flag, code, name }) =>
-            Markup.button.callback(name + " " + flag, code)
-          )
-        ).oneTime()
+        {
+          reply_markup: {
+            keyboard: [
+              ["Cancel"],
+              ...countries.map(({ flag, name }) => [[name, flag].join(" ")]),
+            ],
+            one_time_keyboard: true,
+          },
+        }
       );
 
       mutateChatHistory(ctx, message_id);
