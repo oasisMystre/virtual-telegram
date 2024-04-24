@@ -100,14 +100,15 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
     return ctx.wizard.next();
   }
 
-  await ctx.reply(
+  const { message_id } = await ctx.reply(
     "No number available for " + country.name + ". Try another country.",
-    Markup.keyboard(
-      countries.map(({ flag, code, name }) =>
-        Markup.button.callback(name + " " + flag, code)
-      )
-    ).oneTime()
+    Markup.keyboard([
+      ["Cancel"],
+      ...countries.map(({ flag, name }) => [[name, flag].join(" ")]),
+    ]).oneTime()
   );
+
+  mutateChatHistory(ctx, message_id);
 };
 
 function createNewNumberWizard() {
