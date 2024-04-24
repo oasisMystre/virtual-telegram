@@ -40,6 +40,7 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
   const value = message.text.toLowerCase();
 
   if (value === "cancel") {
+    if (ctx.scene.current) ctx.scene.leave();
     if (ctx.scene && ctx.scene.session)
       await ctx.deleteMessages(ctx.scene.session.chats);
     return await ctx.deleteMessage();
