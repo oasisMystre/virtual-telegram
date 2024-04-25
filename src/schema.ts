@@ -14,8 +14,8 @@ import {
 export const users = pgTable("user", {
   id: text("id").primaryKey(),
   lastName: text("last_name"),
-  firstName: text("first_name").notNull(),
-  username: text("username").unique().notNull(),
+  firstName: text("first_name"),
+  username: text("username"),
   isVerified: boolean("is_verified").default(false),
 });
 

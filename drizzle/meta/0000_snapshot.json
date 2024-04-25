@@ -1,5 +1,5 @@
 {
-  "id": "60bd2a28-2150-4cd0-aa77-411a34631641",
+  "id": "8cd866d7-a8fe-49e8-befa-ea16e492e937",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -150,13 +150,13 @@
           "name": "first_name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "username": {
           "name": "username",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "is_verified": {
           "name": "is_verified",
@@ -169,15 +169,7 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "user_username_unique": {
-          "name": "user_username_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "virtual_numbers": {
       "name": "virtual_numbers",

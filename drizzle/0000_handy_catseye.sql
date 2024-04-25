@@ -21,10 +21,9 @@ CREATE TABLE IF NOT EXISTS "temp_mail" (
 CREATE TABLE IF NOT EXISTS "user" (
 	"id" text PRIMARY KEY NOT NULL,
 	"last_name" text,
-	"first_name" text NOT NULL,
-	"username" text NOT NULL,
-	"is_verified" boolean DEFAULT false,
-	CONSTRAINT "user_username_unique" UNIQUE("username")
+	"first_name" text,
+	"username" text,
+	"is_verified" boolean DEFAULT false
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "virtual_numbers" (
