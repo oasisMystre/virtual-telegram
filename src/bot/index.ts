@@ -38,7 +38,7 @@ export const echoVerify = async (ctx: BotContext) => {
       )
     ),
     Markup.inlineKeyboard([
-      Markup.button.webApp("Join group", process.env.TELEGRAM_GROUP!),
+      Markup.button.url("Join group", process.env.TELEGRAM_GROUP!),
     ])
   );
 };
@@ -116,14 +116,7 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
   bot.action(/^open/i, onOpen);
   bot.action(/^delete/, onDelete);
 
-  // bot.on("callback_query", (ctx) => {
-  //   /// do restore here
-  //   console.log(ctx.scene.current);
-  // });
-
   bot.on("new_chat_members", async (ctx, next) => {
-    // console.log("New Chat Member");
-    // console.log(ctx.message.new_chat_members)
     await Promise.all(
       ctx.message.new_chat_members.map((member) =>
         findOrCreateUser({
@@ -131,7 +124,7 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
           id: member.id.toString(),
           firstName: member.first_name,
           lastName: member.last_name,
-          username: member.username!,
+          username: member.username,
         })
       )
     );

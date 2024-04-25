@@ -53,7 +53,7 @@ export const tempMails = pgTable("temp_mail", {
   username: text("email").notNull(),
   password: text("password").notNull(),
   userId: text("user_id")
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
 });
 
