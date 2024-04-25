@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1713858378033,
-      "tag": "0000_round_satana",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1713937093043,
-      "tag": "0001_far_rhino",
+      "when": 1714057360589,
+      "tag": "0000_panoramic_nightcrawler",
       "breakpoints": true
     }
   ]

@@ -4,7 +4,7 @@ import { onChange, onDelete, onInbox, onOpen, onOTP, onReject } from "./shared";
 import type { BotContext } from "../context";
 import { findOrCreateUser } from "../controllers/user.controller";
 
-import { readFileSync } from "./utils";
+import { cleanText, readFileSync } from "./utils";
 import { initializeState } from "./initialize";
 import { newNumberScene } from "./scenes/createNumber.scene";
 import { createEmailScene } from "./scenes/createEmail.scene";
@@ -31,9 +31,14 @@ const echoHelp = async (ctx: BotContext) => {
 
 export const echoVerify = async (ctx: BotContext) => {
   await ctx.replyWithMarkdownV2(
-    readFileSync("./src/bot/locale/default/join-group.md"),
+    cleanText(
+      readFileSync("./src/bot/locale/default/join-group.md", "utf-8").replace(
+        "%link%",
+        process.env.TELEGRAM_GROUP!
+      )
+    ),
     Markup.inlineKeyboard([
-      Markup.button.webApp("Join group", "https://t.me/altgenerate"),
+      Markup.button.webApp("Join group", process.env.TELEGRAM_GROUP!),
     ])
   );
 };
@@ -111,12 +116,14 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
   bot.action(/^open/i, onOpen);
   bot.action(/^delete/, onDelete);
 
-  bot.on("callback_query", (ctx) => {
-    /// do restore here
-    console.log(ctx.scene.current);
-  });
+  // bot.on("callback_query", (ctx) => {
+  //   /// do restore here
+  //   console.log(ctx.scene.current);
+  // });
 
-  bot.on("new_chat_members", async (ctx) => {
+  bot.on("new_chat_members", async (ctx, next) => {
+    // console.log("New Chat Member");
+    // console.log(ctx.message.new_chat_members)
     await Promise.all(
       ctx.message.new_chat_members.map((member) =>
         findOrCreateUser({
@@ -128,6 +135,8 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
         })
       )
     );
+
+    await initializeState(ctx, next);
   });
 
   return bot;

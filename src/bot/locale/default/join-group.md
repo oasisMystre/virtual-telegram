@@ -1,5 +1,5 @@
 *⚠️⚠️Warning⚠️⚠️*
 
-⛔️ Ensure you are a member of https://t.me/altgenerate
+⛔️ Ensure you are a member of %link%
 
 After joining @altgenerate try again!
