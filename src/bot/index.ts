@@ -117,6 +117,7 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
   bot.action(/^delete/, onDelete);
 
   bot.on("new_chat_members", async (ctx, next) => {
+    console.log("new_chat_member")
     await Promise.all(
       ctx.message.new_chat_members.map((member) =>
         findOrCreateUser({
