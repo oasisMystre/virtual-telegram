@@ -29,7 +29,7 @@ const echoHelp = async (ctx: BotContext) => {
   );
 };
 
-export const echoVerify = async (ctx: BotContext) => {
+const echoVerify = async (ctx: BotContext) => {
   await ctx.replyWithMarkdownV2(
     cleanText(
       readFileSync("./src/bot/locale/default/join-group.md", "utf-8").replace(
@@ -44,17 +44,19 @@ export const echoVerify = async (ctx: BotContext) => {
 };
 
 const onCreate = async (ctx: BotContext) => {
-  if (ctx.chat?.type !== "private") return;
+  // if (ctx.chat?.type !== "private") return;
 
-  if (ctx.user.isVerified)
+  // if (ctx.user.isVerified)
     return await ctx.scene.enter(CREATE_NEW_NUMBER_WIZARD);
-  await echoVerify(ctx);
+  // await echoVerify(ctx);
 };
 
 const onEmail = async (ctx: BotContext) => {
-  if (ctx.chat?.type !== "private") return;
-  if (ctx.user.isVerified) return await ctx.scene.enter(CREATE_EMAIL_WIZARD);
-  await echoVerify(ctx);
+  // if (ctx.chat?.type !== "private") return;
+
+  // if (ctx.user.isVerified) 
+    return await ctx.scene.enter(CREATE_EMAIL_WIZARD);
+  // await echoVerify(ctx);
 };
 
 export const registerBot = function (bot: Telegraf<BotContext>) {
