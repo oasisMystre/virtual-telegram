@@ -1,4 +1,4 @@
-import { smsPvaApiKey } from "../../config";
+import { smsPvaApiKey } from "../config";
 import type { AxiosInstance } from "axios";
 
 export abstract class InjectAxios {
@@ -11,5 +11,9 @@ export abstract class InjectAxios {
   protected buildQueryString(query: Record<string, any>) {
     const q = new URLSearchParams(Object.assign(query, this.query));
     return "?" + q.toString();
+  }
+
+  protected buildPathQueryString(path: string, query: Record<string, any>) {
+    return path + this.buildQueryString(query);
   }
 }

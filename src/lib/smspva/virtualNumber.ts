@@ -1,4 +1,4 @@
-import { InjectAxios } from "./inject";
+import { InjectAxios } from "../inject";
 import type {
   GetDenyVirtualNumber,
   GetVirtualNumberDto,

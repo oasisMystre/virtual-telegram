@@ -1,9 +1,7 @@
-import { password } from "bun";
 import { relations } from "drizzle-orm";
 import {
   bigint,
   boolean,
-  integer,
   json,
   pgTable,
   serial,
@@ -50,10 +48,11 @@ export const virtualNumbers = pgTable("virtual_numbers", {
 
 export const tempMails = pgTable("temp_mail", {
   id: serial("id").primaryKey(),
-  username: text("email").notNull(),
-  password: text("password").notNull(),
+  username: text("email").unique().notNull(),
+  password: text("password"),
   userId: text("user_id")
     .references(() => users.id, { onDelete: "cascade" })
+    .unique()
     .notNull(),
 });
 

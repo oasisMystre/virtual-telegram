@@ -1,5 +1,5 @@
 {
-  "id": "8cd866d7-a8fe-49e8-befa-ea16e492e937",
+  "id": "e3bbe121-d9ad-489e-850c-5b5e6208b162",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -102,7 +102,7 @@
           "name": "password",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "user_id": {
           "name": "user_id",
@@ -123,12 +123,27 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "temp_mail_email_unique": {
+          "name": "temp_mail_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        },
+        "temp_mail_user_id_unique": {
+          "name": "temp_mail_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id"
+          ]
+        }
+      }
     },
     "user": {
       "name": "user",

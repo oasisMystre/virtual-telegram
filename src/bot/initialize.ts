@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 
 import { BotContext, BotWizardContext } from "../context";
 import { findOrCreateUser } from "../controllers/user.controller";
-import { initializeTempMail } from "../controllers/tempMail.controller";
+import { initializeGmailnator } from "../controllers/tempMail.controller";
 
 export const initializeState = async (
   ctx: BotContext | BotWizardContext,
@@ -24,11 +24,10 @@ export const initializeState = async (
     )
   );
 
-  const {tempMail, mailjs} = await initializeTempMail(user.id);
+  const tempMail = await initializeGmailnator(user.id);
 
   ctx.state.user = user;
   ctx.state.tempMail = tempMail;
-  ctx.state.mailjs = mailjs;
   ctx.state.wallet = etherWallet;
 
   /// @ts-ignore

@@ -1,10 +1,12 @@
+import { z } from "zod";
 import Mailjs from "@cemalgnlts/mailjs";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
+import { User } from "../dtos";
 import { db } from "../connection";
 import { tempMails } from "../schema";
-import { z } from "zod";
-import { User } from "@/dtos";
+import { GmailNator } from "../lib";
+import { EmailOption } from "../lib/gmailnator/model/generate.model";
 
 export const initializeTempMail = async function (
   userId: z.infer<typeof User>["id"],
@@ -23,15 +25,13 @@ export const initializeTempMail = async function (
     const [account] = await db
       .insert(tempMails)
       .values({
-        id: tempMail?.id,
         userId,
         username: data.username,
         password: data.password,
       })
       .onConflictDoUpdate({
-        target: [tempMails.id],
+        target: [tempMails.userId],
         set: {
-          userId,
           username: data.username,
           password: data.password,
         },
@@ -42,7 +42,40 @@ export const initializeTempMail = async function (
     tempMail = account;
   }
 
-  await mailjs.login(tempMail.username, tempMail.password);
+  await mailjs.login(tempMail.username, tempMail.password!);
 
-  return {mailjs, tempMail};
+  return { mailjs, tempMail };
+};
+
+export const initializeGmailnator = async function (
+  userId: z.infer<typeof User>["id"],
+  forceUpdate: boolean = false
+) {
+  let tempMail = await db.query.tempMails
+    .findFirst({
+      where: eq(tempMails.userId, userId),
+    })
+    .execute();
+
+  if (!tempMail || forceUpdate) {
+    const { data } = await GmailNator.instance.virtualEmail.generateEmail([
+      EmailOption.PUBLIC_DOT_GMAIL,
+    ]);
+
+    const [account] = await db
+      .insert(tempMails)
+      .values({
+        userId,
+        username: data.email,
+      })
+      .onConflictDoUpdate({
+        target: tempMails.userId,
+        set: { username: data.email },
+      })
+      .returning();
+
+    tempMail = account;
+  }
+
+  return tempMail;
 };

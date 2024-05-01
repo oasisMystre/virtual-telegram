@@ -14,8 +14,10 @@ CREATE TABLE IF NOT EXISTS "support_ticker" (
 CREATE TABLE IF NOT EXISTS "temp_mail" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"email" text NOT NULL,
-	"password" text NOT NULL,
-	"user_id" text NOT NULL
+	"password" text,
+	"user_id" text NOT NULL,
+	CONSTRAINT "temp_mail_email_unique" UNIQUE("email"),
+	CONSTRAINT "temp_mail_user_id_unique" UNIQUE("user_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "user" (
@@ -51,7 +53,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "temp_mail" ADD CONSTRAINT "temp_mail_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "temp_mail" ADD CONSTRAINT "temp_mail_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

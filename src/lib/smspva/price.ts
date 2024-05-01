@@ -1,4 +1,4 @@
-import { InjectAxios } from "./inject";
+import { InjectAxios } from "../inject";
 import type { GetServicePriceDto, ServicePrice } from "./models";
 
 export default class PriceMethod extends InjectAxios {

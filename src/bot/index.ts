@@ -112,12 +112,11 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
   /// Temp mail actions
   bot.action(/^inbox/i, onInbox);
   bot.action(/^change/i, onChange);
-
+  
   bot.action(/^open/i, onOpen);
   bot.action(/^delete/, onDelete);
 
   bot.on("new_chat_members", async (ctx, next) => {
-    console.log("new_chat_member")
     await Promise.all(
       ctx.message.new_chat_members.map((member) =>
         findOrCreateUser({

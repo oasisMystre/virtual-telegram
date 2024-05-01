@@ -9,7 +9,6 @@ export const findOrCreateUser = async (values: z.infer<typeof PartialUser>) => {
   const update: Partial<z.infer<typeof PartialUser>> = {};
 
   if (values.isVerified) update.isVerified = values.isVerified;
-  console.log(update);
 
   const [user] = await db
     .insert(users)
