@@ -1,8 +1,7 @@
 import { Composer, Markup, Scenes } from "telegraf";
 
 import { SMSPVA } from "../../lib/smspva";
-import countries from "@/lib/smspva/config/countries";
-import { Service } from "@/lib/smspva/config";
+import { Service, countries } from "../../lib/smspva/config";
 
 import type { BotWizardContext } from "../../context";
 
