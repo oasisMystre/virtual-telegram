@@ -3,11 +3,11 @@ import { Service } from "../src/lib/smspva/config";
 
 async function main() {
   const response = await SMSPVA.instance.virtualNumber.getNumber({
-    country: "UK",
+    country: "US",
     service: Service.TELEGRAM,
   })
 
-  console.log(JSON.stringify(response.data))
+  // console.log(JSON.stringify(response.data))
 
   // const response = await SMSPVA.instance.virtualNumber.denyNumber({
   //   orderId: "149716923"

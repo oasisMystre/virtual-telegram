@@ -1,15 +1,13 @@
 import { Markup, Scenes, session, type Telegraf } from "telegraf";
 
-import { onChange, onDelete, onInbox, onOpen, onOTP, onReject } from "./shared";
+import { onOTP, onReject } from "./shared";
 import type { BotContext } from "../context";
 import { findOrCreateUser } from "../controllers/user.controller";
 
 import { cleanText, readFileSync } from "./utils";
 import { initializeState } from "./initialize";
 import { newNumberScene } from "./scenes/createNumber.scene";
-import { createEmailScene } from "./scenes/createEmail.scene";
 import {
-  CREATE_EMAIL_WIZARD,
   CREATE_NEW_NUMBER_WIZARD,
   CREATE_VIRTUAL_NUMBER_ACTION,
 } from "./constants";
@@ -47,20 +45,12 @@ const onCreate = async (ctx: BotContext) => {
   // if (ctx.chat?.type !== "private") return;
 
   // if (ctx.user.isVerified)
-    return await ctx.scene.enter(CREATE_NEW_NUMBER_WIZARD);
-  // await echoVerify(ctx);
-};
-
-const onEmail = async (ctx: BotContext) => {
-  // if (ctx.chat?.type !== "private") return;
-
-  // if (ctx.user.isVerified) 
-    return await ctx.scene.enter(CREATE_EMAIL_WIZARD);
+  return await ctx.scene.enter(CREATE_NEW_NUMBER_WIZARD);
   // await echoVerify(ctx);
 };
 
 export const registerBot = function (bot: Telegraf<BotContext>) {
-  const scenes = [newNumberScene, createEmailScene];
+  const scenes = [newNumberScene];
   const stage = new Scenes.Stage(scenes);
 
   scenes.map((scene) => scene.use(initializeState));
@@ -103,20 +93,9 @@ export const registerBot = function (bot: Telegraf<BotContext>) {
   bot.command("phone", onCreate);
   bot.action("phone", onCreate);
 
-  bot.hears("email", onEmail);
-  bot.command("email", onEmail);
-  bot.action("email", onEmail);
-
   /// Virtual number actions
   bot.action(/^otp/i, onOTP);
   bot.action(/^reject/i, onReject);
-
-  /// Temp mail actions
-  bot.action(/^inbox/i, onInbox);
-  bot.action(/^change/i, onChange);
-  
-  bot.action(/^open/i, onOpen);
-  bot.action(/^delete/, onDelete);
 
   bot.on("new_chat_members", async (ctx, next) => {
     await Promise.all(

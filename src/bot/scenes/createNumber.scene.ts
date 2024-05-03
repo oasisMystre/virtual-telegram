@@ -88,7 +88,6 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
                 callback_data: OTP_ACTION + data.id + country.code,
               },
             ],
-            [{ text: "Generate Email", callback_data: GENERATE_EMAIL_ACTION }],
           ],
         },
       }
@@ -118,10 +117,6 @@ function createNewNumberWizard() {
 
   stepHandler.action(/^otp/i, onOTP);
   stepHandler.action(/^reject/i, onReject);
-  stepHandler.action(
-    GENERATE_EMAIL_ACTION,
-    async (ctx) => await ctx.scene.enter(CREATE_EMAIL_WIZARD)
-  );
   stepHandler.action(CANCEL_ACTION, async (ctx) => await ctx.deleteMessage());
 
   return new Scenes.WizardScene<BotWizardContext>(
