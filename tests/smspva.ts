@@ -1,24 +1,19 @@
 import { SMSPVA } from "../src/lib/smspva";
 import { Service } from "../src/lib/smspva/config";
-import { db } from "../src/connection";
-import { virtualNumbers } from "../src/schema";
 
 async function main() {
-  // const response = await SMSPVA.instance.virtualNumber.getSMS({
-  //   id: "149716923",
-  //   country: "HU",
-  //   service: Service.TELEGRAM,
-  // })
+  const response = await SMSPVA.instance.virtualNumber.getNumber({
+    country: "UK",
+    service: Service.TELEGRAM,
+  })
 
-  // console.log(response.data)
+  console.log(JSON.stringify(response.data))
 
   // const response = await SMSPVA.instance.virtualNumber.denyNumber({
-  //   country: "UK",
-  //   service: Service.TELEGRAM,
-  //   id: "149034929"
+  //   orderId: "149716923"
   // });
 
-  // console.log(response.data);
+  // console.log(JSON.stringify(response.data));
 
   // await Promise.all(
   //   (
@@ -35,8 +30,8 @@ async function main() {
 
   // await db.delete(virtualNumbers).execute()
 
-  const response =await SMSPVA.instance.micellenous.getActiveCountries();
-  console.log(JSON.stringify(response))
+  // const response =await SMSPVA.instance.micellenous.getActiveCountries();
+  // console.log(JSON.stringify(response))
 }
 
 main().catch(console.log);

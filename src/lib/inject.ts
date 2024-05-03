@@ -8,6 +8,10 @@ export abstract class InjectAxios {
 
   constructor(protected axios: AxiosInstance) {}
 
+  protected buildPath(...path: any[]){
+    return path.join("/");
+  }
+
   protected buildQueryString(query: Record<string, any>) {
     const q = new URLSearchParams(Object.assign(query, this.query));
     return "?" + q.toString();

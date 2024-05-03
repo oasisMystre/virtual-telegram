@@ -1,29 +1,29 @@
 import axios from "axios";
 
 import Price from "./price";
-import VirtualNumber from "./virtualNumber";
+import { VirtualNumberV1, VirtualNumberV2 } from "./virtualNumber";
 import { Micellenous } from "./micellenous";
 
 export class SMSPVA {
   readonly price: Price;
-  readonly virtualNumber: VirtualNumber;
   readonly micellenous: Micellenous;
+  readonly virtualNumber: VirtualNumberV1;
 
   constructor() {
-    const axiosInstance = axios.create({
+    const axiosInstanceV1 = axios.create({
       baseURL: "https://smspva.com/priemnik.php",
     });
 
-    this.price = new Price(axiosInstance);
-    this.virtualNumber = new VirtualNumber(axiosInstance);
-    this.micellenous = new Micellenous(
-      axios.create({
-        baseURL: "https://api.smspva.com/",
-        headers: {
-          apiKey: process.env.SMS_PVA_API_KEY,
-        },
-      })
-    );
+    const axiosInstanceV2 = axios.create({
+      baseURL: "https://api.smspva.com/",
+      headers: {
+        apiKey: process.env.SMS_PVA_API_KEY,
+      },
+    });
+
+    this.price = new Price(axiosInstanceV1);
+    this.micellenous = new Micellenous(axiosInstanceV2);
+    this.virtualNumber = new VirtualNumberV1(axiosInstanceV1);
   }
 
   static #instance: SMSPVA;
