@@ -125,6 +125,8 @@ function createNewNumberWizard() {
   return new Scenes.WizardScene<BotWizardContext>(
     CREATE_NEW_NUMBER_WIZARD,
     async (ctx) => {
+      const countries = await SMSPVA.instance.micellenous.getActiveCountries();
+
       Markup.keyboard(
         countries.map(({ flag, code, name }) =>
           Markup.button.callback(name + " " + flag, code)

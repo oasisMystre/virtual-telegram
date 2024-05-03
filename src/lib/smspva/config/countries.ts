@@ -94,7 +94,8 @@ const countries = [
   { flag: "🇨🇭", name: "Switzerland", code: "CH" },
   { flag: "🇬🇧", name: "United Kingdom", code: "UK" },
   { flag: "🇺🇸", name: "United States", code: "US" },
-];
+] as const;
 
 export type Country = (typeof countries)[number];
+export type CountryCode = Country["code"];
 export default countries;

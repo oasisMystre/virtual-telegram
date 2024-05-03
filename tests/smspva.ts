@@ -4,13 +4,13 @@ import { db } from "../src/connection";
 import { virtualNumbers } from "../src/schema";
 
 async function main() {
-  const response = await SMSPVA.instance.virtualNumber.getSMS({
-    id: "149716923",
-    country: "HU",
-    service: Service.TELEGRAM,
-  })
+  // const response = await SMSPVA.instance.virtualNumber.getSMS({
+  //   id: "149716923",
+  //   country: "HU",
+  //   service: Service.TELEGRAM,
+  // })
 
-  console.log(response.data)
+  // console.log(response.data)
 
   // const response = await SMSPVA.instance.virtualNumber.denyNumber({
   //   country: "UK",
@@ -34,6 +34,9 @@ async function main() {
   // );
 
   // await db.delete(virtualNumbers).execute()
+
+  const response =await SMSPVA.instance.micellenous.getActiveCountries();
+  console.log(JSON.stringify(response))
 }
 
 main().catch(console.log);
