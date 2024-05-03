@@ -1,8 +1,8 @@
 import { Composer, Markup, Scenes } from "telegraf";
 
 import { SMSPVA } from "../../lib/smspva";
-import { Service } from "../../lib/smspva/config";
-import countries from "../../lib/smspva/config/countries";
+import countries from "@/lib/smspva/config/countries";
+import { Service } from "@/lib/smspva/config";
 
 import type { BotWizardContext } from "../../context";
 
@@ -100,11 +100,14 @@ const onCreateVirtualNumber = async (ctx: BotWizardContext) => {
     return ctx.wizard.next();
   }
 
+  const activeCountries =
+    await SMSPVA.instance.micellenous.getActiveCountries();
+
   const { message_id } = await ctx.reply(
     "No number available for " + country.name + ". Try another country.",
     Markup.keyboard([
       ["Cancel"],
-      ...countries.map(({ flag, name }) => [[name, flag].join(" ")]),
+      ...activeCountries.map(({ flag, name }) => [[name, flag].join(" ")]),
     ]).oneTime()
   );
 

@@ -70,7 +70,7 @@
 //   { flag: "🇻🇳", name: "Vietnam", code: "VN" },
 // ] as const;
 
-const countries = [
+export const countries = [
   { flag: "🇦🇺", name: "Australia", code: "AU" },
   { flag: "🇦🇹", name: "Austria", code: "AT" },
   { flag: "🇧🇪", name: "Belgium", code: "BE" },
